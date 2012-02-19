@@ -207,8 +207,8 @@ create table bls_oe_codes
 	No need for index or primary key on series_id, because we will not be
 	searching on that field.
 */
-drop table bls_oe_data;
-create table bls_oe_data
+drop table bls_oe_current;
+create table bls_oe_current
 (
 		/* from raw_bls_oe_series */
 		seasonal char(1) not null,
