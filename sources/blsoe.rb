@@ -15,11 +15,30 @@ class BLSOE < ICSource
     }
   end
 
+  def files
+    [
+     'oe.area',
+     'oe.areatype',
+     'oe.contacts',
+     'oe.data.0.Current',
+     'oe.data.1.AllData',
+     'oe.datatype',
+     'oe.footnote',
+     'oe.industry',
+     'oe.occugroup',
+     'oe.occupation',
+     'oe.release',
+     'oe.seasonal',
+     'oe.sector',
+     'oe.series',
+     'oe.statemsa',
+     'oe.txt'
+    ]
+  end
+
   def extract
-    @ic.log "Extracting..."
-    return
     @ic.log "Connecting to #{config[:remote_host]}"
-    ftp = Net::FTP.new(config[:remote_host])
+    ftp = Net::FTP.new(config[:remote_host], 'anonymous', 'diamondap@yahoo.com')
     @ic.log ftp.welcome
     ftp.passive = true
     
