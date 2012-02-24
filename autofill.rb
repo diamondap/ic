@@ -34,6 +34,7 @@ module Autofill
   # indicating whether the original string starts with
   # that word or phrase.
   def self.words_and_phrases(string, ignore_list = [])
+    char_only_string = string.gsub(/\W+/, '')
     word_list = []
     words = string.split(/\W+/) 
     words.each do |word|
@@ -41,7 +42,9 @@ module Autofill
       word_list.push([word, string.start_with?(word)])
     end
     collect_phrases(words, ignore_list).each do |phrase|
-      word_list.push([phrase, string.start_with?(phrase)])
+      word_list.push([phrase, 
+                      (string.start_with?(phrase) or 
+                       phrase.gsub(/\W+/, '') == char_only_string)])
     end
     word_list
   end
