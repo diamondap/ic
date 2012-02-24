@@ -59,8 +59,13 @@ class BLSOE < ICSource
     # xform_current_data
     @ic.log "Deleting autofill file"
     delete_autofill_output_file
-    @ic.log "Transforming area autofill data"
-    lines_in, lines_out = xform_area
+
+    # @ic.log "Transforming area autofill data"
+    # lines_in, lines_out = xform_area
+    # @ic.log "#{lines_in} lines in, #{lines_out} lines out"
+
+    @ic.log "Transforming industry autofill data"
+    lines_in, lines_out = xform_industry
     @ic.log "#{lines_in} lines in, #{lines_out} lines out"
   end
 
@@ -160,7 +165,31 @@ class BLSOE < ICSource
   end
 
   def xform_industry
-
+    input_count = 0
+    output_count = 0
+    infile_path = File.join(raw_data_dir, 'oe.industry')
+    outfile = File.open(autofill_output_file, 'a')
+    CSV.foreach(infile_path, col_sep: "\t", headers: true) do |data|
+      record_type = INDUSTRY
+      industry_name = data['industry_name']
+      if data['industry_code'] =~ /--/
+        industry_name = data['industry_name'].split('-')[1].strip
+        record_type = SECTOR
+      end
+      industries = Autofill::words_and_phrases(industry_name)
+      industries.each do |tuple|
+        vals = [tuple[0].strip, # word or phrase
+                record_type, 
+                tuple[1], # bool: does area name start with this word/phrase?
+                data['industry_code'],
+                data['industry_name']]
+        outfile.puts vals.join("\t")
+        output_count += 1 
+      end
+      input_count += 1
+    end
+    outfile.close
+    [input_count, output_count]
   end
 
 end
