@@ -68,8 +68,12 @@ class BLSOE < ICSource
     # lines_in, lines_out = xform_industry
     # @ic.log "#{lines_in} lines in, #{lines_out} lines out"
 
-    @ic.log "Transforming occugroup autofill data"
-    lines_in, lines_out = xform_occugroup
+    # @ic.log "Transforming occugroup autofill data"
+    # lines_in, lines_out = xform_occugroup
+    # @ic.log "#{lines_in} lines in, #{lines_out} lines out"
+
+    @ic.log "Transforming occupation autofill data"
+    lines_in, lines_out = xform_occupation
     @ic.log "#{lines_in} lines in, #{lines_out} lines out"
   end
 
@@ -209,6 +213,28 @@ class BLSOE < ICSource
                 tuple[1], # bool: does area group start with this word/phrase?
                 data['occugroup_code'], 
                 data['occugroup_name']]
+        outfile.puts vals.join("\t")
+        output_count += 1 
+      end
+      input_count += 1
+    end
+    outfile.close
+    [input_count, output_count]
+  end
+
+  def xform_occupation
+    input_count = 0
+    output_count = 0
+    infile_path = File.join(raw_data_dir, 'oe.occupation')
+    outfile = File.open(autofill_output_file, 'a')
+    CSV.foreach(infile_path, col_sep: "\t", headers: true) do |data|
+      occupations = Autofill::words_and_phrases(data['occupation_name'])
+      occupations.each do |tuple|
+        vals = [tuple[0].strip, # word or phrase
+                OCCUPATION,  
+                tuple[1], # bool: does area group start with this word/phrase?
+                data['occupation_code'], 
+                data['occupation_name']]
         outfile.puts vals.join("\t")
         output_count += 1 
       end
