@@ -143,7 +143,7 @@ class BLSOE < ICSource
       # This prevents 2-letter state codes from polluting the autofill
       region_name = data['area_name'].split(',')[0]
 
-      all_region_names = Autofill::words_and_phrases(region_name)
+      all_region_names = Autofill::words_and_phrases(region_name, ignore)
       all_region_names.each do |tuple|
         vals = [tuple[0].strip, # word or phrase
                 AREA, 
@@ -157,6 +157,10 @@ class BLSOE < ICSource
     end
     outfile.close
     [input_count, output_count]
+  end
+
+  def xform_industry
+
   end
 
 end
