@@ -5,6 +5,7 @@
 # ------------------------------------------------------------------
 require 'bundler/setup'
 require_relative 'ic_source'
+require_relative 'autofill'
 require 'net/ftp'
 require 'net/http'
 require 'csv'
@@ -87,7 +88,6 @@ class IC
     @sources.keys.sort.each do |name|
       printf("%20s  %58s\n", name, @sources[name].description)
     end
-    puts "Usage: ruby ic.rb -r <source> <extract|transform|load>"
   end
 
   def run(source_name, action)
@@ -101,7 +101,19 @@ class IC
     puts "To list available data sources:"
     puts "  ruby ic.rb -l \n"
     puts "To run an action for a data source:"
-    puts "  ruby ic.rb -r <source_name> <extract|transform|load>\n\n"
+    puts "  ruby ic.rb -r <source_name> <command>\n\n"
+    puts "The following commands are available:"
+    puts "  extract         - Extract data from remote source"
+    puts "  transform       - Transform data to local format"
+    puts "  load            - Load transformed data into DB"
+    puts "  show_schema     - Show the local schema for this data set"
+    puts "  drop_schema     - Drop all tables for this data set"
+    puts "  create_schema   - Create local DB schema for data set"
+    puts "  rebuild_schema  - Drop and rebuild schema for data set"
+    puts "  show_indexes    - Show all indexes for this data set"
+    puts "  drop_indexes    - Drop all indexes for this data set"
+    puts "  create_indexes  - Create all indexes for this data set"
+    puts "  rebuild_indexes - Drop & recreate all indexes for this data set"
     exit(0)
   end
 
@@ -112,7 +124,10 @@ class IC
       source_name = ARGV[1]
       action = ARGV[2]
       show_usage_and_exit if source_name.nil? or action.nil?
-      valid_actions = ['extract', 'transform', 'load']
+      valid_actions = ['extract', 'transform', 'load', 'show_schema',
+                      'drop_schema', 'create_schema', 'rebuild_schema',
+                      'show_indexes', 'drop_indexes', 'create_indexes',
+                      'rebuild_indexes']
       if !@sources.has_key?(source_name)
         puts "Source '#{source_name}' does not exist."
         puts "Available sources are: "

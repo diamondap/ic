@@ -55,15 +55,20 @@ class BLSOE < ICSource
   end
 
   def transform
-    @ic.log "Transform..."
-    xform_current_data
+    # @ic.log "Transform..."
+    # xform_current_data
+    @ic.log "Deleting autofill file"
+    delete_autofill_output_file
+    @ic.log "Transforming area autofill data"
+    lines_in, lines_out = xform_area
+    @ic.log "#{lines_in} lines in, #{lines_out} lines out"
   end
 
   def load
     @ic.log "Load..."
   end
 
-  # Adapter-specific functions from here down
+  private
 
   # Columns for table bls_oe_current
   CURRENT_DATA_COLS = ['seasonal', 'areatype_code', 'area_code',
@@ -71,6 +76,8 @@ class BLSOE < ICSource
                        'datatype_code', 'year', 'period', 'value', 
                        'footnote_codes']
 
+  # Transforms the "current" dataset, which includes the wage data
+  # for the current year.
   def xform_current_data
     line_num = 0
     infile_path = File.join(raw_data_dir, 'oe.data.0.Current')
@@ -100,6 +107,56 @@ class BLSOE < ICSource
       end
     end
     outfile.close
+  end
+
+  
+  AREA             = 1
+  INDUSTRY         = 2
+  SECTOR           = 3
+  OCCUPATION_GROUP = 4
+  OCCUPATION       = 5
+  AREA_FIPS        = 6
+  AREA_TYPE        = 7
+  DATA_TYPE        = 8
+  FOOTNOTE         = 9
+  SEASONAL         = 10
+  STATE            = 11
+  
+  def autofill_output_file
+    File.join(transform_dir, 'bls_oe_autofill')
+  end
+
+  def delete_autofill_output_file
+    File.delete(autofill_output_file)
+  end
+
+  # Transform the area file for autofill
+  def xform_area
+    input_count = 0
+    output_count = 0
+    ignore = ['metropolitan', 'nonmetropolitan', 'area', 'region', 'city']
+    infile_path = File.join(raw_data_dir, 'oe.area')    
+    outfile = File.open(autofill_output_file, 'a')
+    CSV.foreach(infile_path, col_sep: "\t", headers: true) do |data|
+
+      # Get the city name from a value like Washington, DC
+      # This prevents 2-letter state codes from polluting the autofill
+      region_name = data['area_name'].split(',')[0]
+
+      all_region_names = Autofill::words_and_phrases(region_name)
+      all_region_names.each do |tuple|
+        vals = [tuple[0].strip, # word or phrase
+                AREA, 
+                tuple[1], # bool: does area name start with this word/phrase?
+                data['area_code'],
+                data['area_name']]
+        outfile.puts vals.join("\t")
+        output_count += 1 
+      end
+      input_count += 1
+    end
+    outfile.close
+    [input_count, output_count]
   end
 
 end

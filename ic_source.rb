@@ -41,19 +41,68 @@ class ICSource
     end
   end
 
-  def schema_file
-    File.join(File.dirname(__FILE__), 'schema', "#{self.name}.sql") 
+  def create_schema_file
+    File.join(File.dirname(__FILE__), 'schema', "#{self.name}_create.sql") 
   end
 
-  # Rebuild the database schema for this source.
-  def rebuild_schema
-    if File.exist?(schema_file)
-      @ic.log "Rebuilding schema for #{name}"
-      sql = File.open(schema_file, 'r').read
-      @ic.dbh.do(sql)
+  def drop_schema_file
+    File.join(File.dirname(__FILE__), 'schema', "#{self.name}_drop.sql") 
+  end
+
+  def create_index_file
+    File.join(File.dirname(__FILE__), 'index', "#{self.name}_create.sql") 
+  end
+
+  def drop_index_file
+    File.join(File.dirname(__FILE__), 'index', "#{self.name}_drop.sql") 
+  end
+
+  def file_content(file_path)
+    if File.exist?(file_path)
+      File.open(file_path, 'r').read
     else
-      raise "Schema file #{schema_file} is missing"
+      raise "File #{schema_file} is missing"
     end
+  end
+
+  def show_schema
+    puts file_content(drop_schema_file)
+    puts file_content(create_schema_file)
+  end
+
+  def drop_schema
+    @ic.log "Dropping schema for #{name}"
+    @ic.dbh.do(file_content(drop_schema_file))    
+  end
+
+  def create_schema
+    @ic.log "Creating schema for #{name}"
+    @ic.dbh.do(file_content(create_schema_file))    
+  end
+
+  def rebuild_schema
+    drop_schema
+    rebuild_schema
+  end
+
+  def show_index
+    puts file_content(drop_index_file)
+    puts file_content(create_index_file)
+  end
+
+  def drop_index
+    @ic.log "Dropping index for #{name}"
+    @ic.dbh.do(file_content(drop_index_file))    
+  end
+
+  def create_index
+    @ic.log "Creating index for #{name}"
+    @ic.dbh.do(file_content(create_index_file))    
+  end
+
+  def rebuild_index
+    drop_index
+    rebuild_index
   end
 
 end
