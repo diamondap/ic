@@ -77,6 +77,10 @@ class IC::Source::BLSOE::Transform
 
   end
 
+  # --------------------------------------------------------------------
+  # BEGIN CURRENT DATA
+  # --------------------------------------------------------------------
+
   # Columns for table bls_oe_current
   CURRENT_DATA_COLS = ['seasonal', 'areatype_code', 'area_code',
                        'industry_code', 'occupation_code', 
@@ -128,6 +132,10 @@ class IC::Source::BLSOE::Transform
   FOOTNOTE         = 9
   SEASONAL         = 10
   STATE            = 11
+
+  # --------------------------------------------------------------------
+  # BEGIN AUTOFILL
+  # --------------------------------------------------------------------
   
   def autofill_output_file
     File.join(@manager.transform_dir, 'bls_oe_autofill')
@@ -240,6 +248,9 @@ class IC::Source::BLSOE::Transform
     [input_count, output_count]
   end
 
+  # --------------------------------------------------------------------
+  # BEGIN CODES
+  # --------------------------------------------------------------------
 
   def codes_file
     File.join(@manager.transform_dir, 'bls_oe_codes')
