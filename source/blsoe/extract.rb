@@ -35,7 +35,7 @@ class IC::Source::BLSOE::Extract
     ]
   end
 
-  def extract
+  def extract_ftp
     @ic.log "Connecting to #{config[:remote_host]}"
     ftp = Net::FTP.new(config[:remote_host], 'anonymous', 'user@host.com')
     @ic.log ftp.welcome
@@ -52,6 +52,29 @@ class IC::Source::BLSOE::Extract
 
     @ic.log "Disconnecting from #{config[:remote_host]}"
     ftp.close
+  end
+
+  def http_urls
+    [
+     'http://www.bls.gov/oes/current/area_definitions_m2010.xls',
+     'http://www.bls.gov/oes/current/occupation_definitions_m2010.xls',
+     'http://www.bls.gov/oes/current/industry_titles_m2010.xls'
+    ]
+  end
+
+  def extract_http
+    http_urls.each do |url|
+      @ic.log "Fetching #{url}"
+      outfile = File.join(@manager.raw_data_dir, File.basename(url))
+      File.open(outfile, 'wb') do |file|
+        file.print Net::HTTP.get(URI(url))
+      end
+    end
+  end
+
+  def extract
+    extract_ftp
+    extract_http
   end
 
 end
