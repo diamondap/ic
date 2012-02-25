@@ -16,21 +16,21 @@ class IC::Source::BLSOE::Extract
 
   def files
     [
-     # 'oe.area',
-     # 'oe.areatype',
-     # 'oe.contacts',
-     # 'oe.data.0.Current',
-     # 'oe.data.1.AllData',
-     # 'oe.datatype',
-     # 'oe.footnote',
-     # 'oe.industry',
-     # 'oe.occugroup',
-     # 'oe.occupation',
-     # 'oe.release',
-     # 'oe.seasonal',
-     # 'oe.sector',
-     # 'oe.series',
-     # 'oe.statemsa',
+     'oe.area',
+     'oe.areatype',
+     'oe.contacts',
+     'oe.data.0.Current',
+     'oe.data.1.AllData',
+     'oe.datatype',
+     'oe.footnote',
+     'oe.industry',
+     'oe.occugroup',
+     'oe.occupation',
+     'oe.release',
+     'oe.seasonal',
+     'oe.sector',
+     'oe.series',
+     'oe.statemsa',
      'oe.txt'
     ]
   end
