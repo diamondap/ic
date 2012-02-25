@@ -1,5 +1,6 @@
-class ICSource
+class IC::Source
 
+  # Param ic is an instance of IC::Base.
   def initialize(ic, name, description)
     @ic = ic
     @name = name

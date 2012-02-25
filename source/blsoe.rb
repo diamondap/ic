@@ -1,4 +1,4 @@
-class BLSOE < ICSource
+class IC::Source::BLSOE < IC::Source
 
   def initialize(ic)
     @name = "blsoe"
