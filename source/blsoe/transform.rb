@@ -6,8 +6,8 @@ class IC::Source::BLSOE::Transform
   end
 
   def transform
-    # @ic.log "Transforming current data (the big file)"
-    # xform_current_data
+    @ic.log "Transforming current data (the big file)"
+    xform_current_data
 
     transform_all_autofill
     @ic.log "Autofill data is in #{autofill_output_file}"
@@ -20,6 +20,9 @@ class IC::Source::BLSOE::Transform
   def transform_all_autofill
     @ic.log "Deleting autofill file"
     delete_autofill_output_file
+
+    @ic.log "Initializing autofill file"
+    init_autofill_output_file
 
     @ic.log "Transforming area autofill data"
     lines_in, lines_out = xform_area
@@ -42,6 +45,9 @@ class IC::Source::BLSOE::Transform
   def transform_all_codes
     @ic.log "Deleting codes file"
     delete_codes_file
+
+    @ic.log "Initializing codes file"
+    init_codes_file
 
     @ic.log "Transforming area codes"
     count = xform_area_codes
@@ -91,8 +97,8 @@ class IC::Source::BLSOE::Transform
   # for the current year.
   def xform_current_data
     line_num = 0
-    infile_path = File.join(raw_data_dir, 'oe.data.0.Current')
-    outfile_path = File.join(transform_dir, 'bls_oe_current')
+    infile_path = File.join(@manager.raw_data_dir, 'oe.data.0.Current')
+    outfile_path = File.join(@manager.transform_dir, 'bls_oe_current')
     outfile = File.open(outfile_path, 'w')
     outfile.puts(CURRENT_DATA_COLS.join("\t"))
     File.open(infile_path, 'r').each_line do |line|
@@ -110,7 +116,8 @@ class IC::Source::BLSOE::Transform
       datatype_code = series_id[23..24]      
       outfile.print([seasonal, areatype_code, area_code,
                      industry_code, occupation_code, 
-                     datatype_code, year, period, value, 
+                     datatype_code, year, period, 
+                     value.strip, 
                      footnote_codes].join("\t"))
       line_num += 1
       if line_num % 50000 == 0
@@ -144,6 +151,12 @@ class IC::Source::BLSOE::Transform
   def delete_autofill_output_file
     if File.exists?(autofill_output_file)
       File.delete(autofill_output_file)
+    end
+  end
+
+  def init_autofill_output_file
+    File.open(autofill_output_file, 'w') do |f|
+      f.puts "word\ttype\tmatches_start\tcode\tvalue"
     end
   end
 
@@ -259,6 +272,12 @@ class IC::Source::BLSOE::Transform
   def delete_codes_file
     if File.exists?(codes_file)
       File.delete(codes_file)
+    end
+  end
+
+  def init_codes_file
+    File.open(codes_file, 'w') do |f|
+      f.puts "code\ttype\tvalue\tdefinition"
     end
   end
 
