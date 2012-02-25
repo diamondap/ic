@@ -27,21 +27,26 @@ class IC::Source::BLSOE::Load
     begin 
       @ic.dbh['AutoCommit'] = false
       count = 0
-      insert_statement = create_insert_statement(file)
+      current_record = nil
+      insert_statement = create_insert_statement(file, table)
       @ic.log insert_statement
-      sth = @ic.dhb.prepare(insert_statement)
-      CSV.foreach(infile_path, col_sep: "\t", headers: true) do |data|
-        sth.execute(*data)
+      sth = @ic.dbh.prepare(insert_statement)
+      CSV.foreach(file, col_sep: "\t", headers: true) do |data|
+        current_record = data
+        sth.execute(*(data.fields))
         count += 1
         if count % batch_size == 0
+          @ic.log "Committing #{batch_size} records"
           @ic.dbh.commit
         end
       end
       @ic.dbh.commit
       sth.finish
     rescue Exception => ex
+      @ic.log "Source file #{file} line #{count}"
+      @ic.log current_record.inspect
       @ic.log ex.message
-      @ic.log "Source file line #{count}"
+      @ic.log ex.backtrace
     ensure
       @ic.dbh['AutoCommit'] = true
     end
@@ -50,7 +55,7 @@ class IC::Source::BLSOE::Load
   def create_insert_statement(file, table)
     headers = nil
     File.open(file, 'r') { |f|
-      headers = f.readline.split(/\t/)
+      headers = f.readline.chomp.split(/\t/)
     }
     placeholders = ('?' * headers.count).split(//).join(', ')
     "insert into #{table} (#{headers.join(', ')}) " + 

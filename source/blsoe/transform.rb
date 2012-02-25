@@ -113,11 +113,13 @@ class IC::Source::BLSOE::Transform
       area_code = series_id[4..10]
       industry_code = series_id[11..16]
       occupation_code = series_id[17..22]
-      datatype_code = series_id[23..24]      
+      datatype_code = series_id[23..24]
+      clean_value = value.strip
+      clean_value = 0 if clean_value =~ /-/ 
       outfile.print([seasonal, areatype_code, area_code,
                      industry_code, occupation_code, 
                      datatype_code, year, period, 
-                     value.strip, 
+                     clean_value, 
                      footnote_codes].join("\t"))
       line_num += 1
       if line_num % 50000 == 0
