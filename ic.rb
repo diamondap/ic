@@ -73,8 +73,11 @@ module IC
     end
 
     def dbh
-      log "Connecting to DBI:Pg:#{db_catalog} as user #{db_user}"
-      @dbh ||= DBI.connect("DBI:Pg:#{db_catalog}", db_user, db_password)
+      if @dbh.nil?
+        log "Connecting to DBI:Pg:#{db_catalog} as user #{db_user}"
+        @dbh = DBI.connect("DBI:Pg:#{db_catalog}", db_user, db_password)
+      end
+      @dbh
     end
 
     def disconnect!

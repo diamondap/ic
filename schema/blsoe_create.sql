@@ -1,4 +1,4 @@
-/* Create schema for Bureau of Labor Statistics Occupational Employment */
+-- Create schema for Bureau of Labor Statistics Occupational Employment
 
 create table if not exists bls_oe_autofill
 (
@@ -28,8 +28,8 @@ insert into bls_oe_types (code, name) values (10, 'Seasonal');
 insert into bls_oe_types (code, name) values (11, 'State');
 
 
-/* This table maps various codes (area type, occupation group, 
-   industry, etc.) to meaningful names. */
+-- This table maps various codes (area type, occupation group, 
+-- industry, etc.) to meaningful names. 
 create table if not exists bls_oe_codes
 (
 		code varchar(20) not null,
@@ -38,22 +38,9 @@ create table if not exists bls_oe_codes
 		definition text null
 );
 
-/* create unique index ix_bls_oe_codes on bls_oe_codes (code, type); */
 
+-- This is the primary data table.
 
-/*
-	This is the primary data table.
-	We build several indexes on this table AFTER running transformations!
-
-	We build indexes after populating the table so that we don't slow
-	down the data import process. Defining indexes before inserting 
-	causes the db to have to update the index every time we do an insert.
-	That's a lot of overhead when we're doing 5,000,000+ inserts.
-
-	Should index area_code, area_type_code, industry_code, occupation_code.
-	No need for index or primary key on series_id, because we will not be
-	searching on that field.
-*/
 create table if not exists bls_oe_current
 (
 		seasonal char(1) not null,

@@ -1,5 +1,5 @@
-/* Drop index file for Bureau of Labor Statistics 
-   Occupational Employment data */
+-- Drop index file for Bureau of Labor Statistics 
+-- Occupational Employment data 
 
 DROP INDEX IF EXISTS ix_autofill;
 DROP INDEX IF EXISTS ix_bls_oe_data_area_code;

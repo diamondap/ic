@@ -1,5 +1,5 @@
-/* Create index file for Bureau of Labor Statistics 
-   Occupational Employment data */
+-- Create index file for Bureau of Labor Statistics 
+-- Occupational Employment data 
 
 -- index with varchar_pattern_ops works with 'like' query
 CREATE INDEX ix_autofill ON bls_oe_autofill (word varchar_pattern_ops);

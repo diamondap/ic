@@ -2,6 +2,7 @@ module IC::Source::BLSOE
 
   require_relative 'blsoe/extract'
   require_relative 'blsoe/transform'
+  require_relative 'blsoe/load'
 
   class Manager < IC::Source
 
@@ -22,7 +23,8 @@ module IC::Source::BLSOE
     end
 
     def load
-      @ic.log "Load..."
+      loader = Load.new(@ic, self)
+      loader.load
     end
 
   end

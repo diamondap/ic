@@ -66,6 +66,30 @@ class IC::Source
     end
   end
 
+  def read_sql_file(file_path)
+    commands = []
+    cmd = ''
+    File.open(file_path, 'r').each_line do |line|
+      line.strip!
+      next if line == '' or line =~ /^--/
+      cmd += line + "\n"
+      if line =~ /;$/
+        commands.push(cmd)
+        cmd = ''
+      end
+    end
+    commands
+  end
+
+  def execute_sql_file(file_path)
+    commands = read_sql_file(file_path)
+    commands.each do |command|
+      sql = command.strip
+      @ic.log sql
+      @ic.dbh.do(sql)
+    end
+  end
+
   def show_schema
     puts file_content(drop_schema_file)
     puts file_content(create_schema_file)
@@ -73,12 +97,12 @@ class IC::Source
 
   def drop_schema
     @ic.log "Dropping schema for #{name}"
-    @ic.dbh.do(file_content(drop_schema_file))    
+    execute_sql_file(drop_schema_file)    
   end
 
   def create_schema
     @ic.log "Creating schema for #{name}"
-    @ic.dbh.do(file_content(create_schema_file))    
+    execute_sql_file(create_schema_file)
   end
 
   def rebuild_schema
@@ -93,12 +117,12 @@ class IC::Source
 
   def drop_index
     @ic.log "Dropping index for #{name}"
-    @ic.dbh.do(file_content(drop_index_file))    
+    execute_sql_file(drop_index_file)
   end
 
   def create_index
     @ic.log "Creating index for #{name}"
-    @ic.dbh.do(file_content(create_index_file))    
+    execute_sql_file(create_index_file)
   end
 
   def rebuild_index
