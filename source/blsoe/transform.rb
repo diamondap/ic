@@ -9,6 +9,15 @@ class IC::Source::BLSOE::Transform
     # @ic.log "Transforming current data (the big file)"
     # xform_current_data
 
+    transform_all_autofill
+    @ic.log "Autofill data is in #{autofill_output_file}"
+
+    transform_all_codes
+    @ic.log "Code data is in #{codes_file}"
+  end
+
+
+  def transform_all_autofill
     @ic.log "Deleting autofill file"
     delete_autofill_output_file
 
@@ -29,6 +38,44 @@ class IC::Source::BLSOE::Transform
     @ic.log "#{lines_in} lines in, #{lines_out} lines out"
   end
 
+
+  def transform_all_codes
+    @ic.log "Deleting codes file"
+    delete_codes_file
+
+    @ic.log "Transforming area codes"
+    count = xform_area_codes
+    @ic.log "Finished #{count} area codes"
+
+    @ic.log "Transforming area type codes"
+    count = xform_areatype_codes
+    @ic.log "Finished #{count} area type codes"
+
+    @ic.log "Transforming industry codes"
+    count = xform_industry_codes
+    @ic.log "Finished #{count} industry codes"
+
+    @ic.log "Transforming sector codes"
+    count = xform_sector_codes
+    @ic.log "Finished #{count} sector codes"
+
+    @ic.log "Transforming occugroup codes"
+    count = xform_occugroup_codes
+    @ic.log "Finished #{count} occugroup codes"
+
+    @ic.log "Transforming occupation codes"
+    count = xform_occupation_codes
+    @ic.log "Finished #{count} occupation codes"
+
+    @ic.log "Transforming footnote codes"
+    count = xform_footnote_codes
+    @ic.log "Finished #{count} footnote codes"
+
+    @ic.log "Transforming seasonal codes"
+    count = xform_seasonal_codes
+    @ic.log "Finished #{count} seasonal codes"
+
+  end
 
   # Columns for table bls_oe_current
   CURRENT_DATA_COLS = ['seasonal', 'areatype_code', 'area_code',
@@ -191,6 +238,81 @@ class IC::Source::BLSOE::Transform
     end
     outfile.close
     [input_count, output_count]
+  end
+
+
+  def codes_file
+    File.join(@manager.transform_dir, 'bls_oe_codes')
+  end
+
+  def delete_codes_file
+    if File.exists?(codes_file)
+      File.delete(codes_file)
+    end
+  end
+
+  def xform_codes(infile_path, code_field, code_type, name_field, 
+                  description_field = nil)
+    count = 0
+    outfile = File.open(codes_file, 'a')
+    CSV.foreach(infile_path, col_sep: "\t", headers: true) do |data|
+      vals = [data[code_field], 
+              code_type, 
+              data[name_field], 
+              description_field.nil? ? nil : data[description_field]]
+      outfile.puts vals.join("\t")
+      count +=1
+    end
+    outfile.close
+    count
+  end
+
+  def xform_area_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.area')
+    xform_codes(infile_path, 'area_code', 
+                AREA, 'area_name', nil)
+  end
+
+  def xform_areatype_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.areatype')
+    xform_codes(infile_path, 'areatype_code', 
+                AREA_TYPE, 'areatype_name', nil)
+  end
+
+  def xform_industry_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.industry')
+    xform_codes(infile_path, 'industry_code', 
+                INDUSTRY, 'industry_name', nil)
+  end
+
+  def xform_sector_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.sector')
+    xform_codes(infile_path, 'sector_code', 
+                SECTOR, 'sector_name', nil)
+  end
+
+  def xform_occugroup_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.occugroup')
+    xform_codes(infile_path, 'occugroup_code', 
+                OCCUPATION_GROUP, 'occugroup_name', nil)
+  end
+
+  def xform_occupation_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.occupation')
+    xform_codes(infile_path, 'occupation_code', 
+                OCCUPATION, 'occupation_name', 'definition')
+  end
+
+  def xform_footnote_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.footnote')
+    xform_codes(infile_path, 'footnote_code', 
+                FOOTNOTE, 'footnote_text', nil)
+  end
+
+  def xform_seasonal_codes
+    infile_path = File.join(@manager.raw_data_dir, 'oe.seasonal')
+    xform_codes(infile_path, 'seasonal', 
+                SEASONAL, 'seasonal_text', nil)
   end
 
 end
