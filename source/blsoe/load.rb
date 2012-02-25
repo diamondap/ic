@@ -13,7 +13,7 @@ class IC::Source::BLSOE::Load
     files.each do |file|
       table = File.basename(file)
       if table == 'bls_oe_current'
-        batch_size = 20000
+        batch_size = 100000
       else 
         batch_size = 1000
       end
@@ -22,6 +22,16 @@ class IC::Source::BLSOE::Load
       load_into_table(file, table, batch_size)
     end
   end
+
+  # def load
+  #   files.each do |file|
+  #     table = File.basename(file)
+  #     # @ic.log "Loading file #{table} into table #{table}"
+  #     stmt = "COPY #{table} FROM '#{file}' WITH CSV HEADER DELIMITER '\t'"
+  #     @ic.log stmt
+  #     @ic.dbh.do(stmt)
+  #   end
+  # end
 
   def load_into_table(file, table, batch_size = 1000)
     begin 

@@ -329,6 +329,11 @@ class IC::Source::BLSOE::Transform
                 OCCUPATION_GROUP, 'occugroup_name', nil)
   end
 
+  def csv_quote(str)
+    s = str.gsub(/"/, "\"\"")
+    "\"#{s}\""
+  end
+
   def xform_occupation_codes
     infile_path = File.join(@manager.raw_data_dir, 
                             'occupation_definitions_m2010.csv')
@@ -338,7 +343,7 @@ class IC::Source::BLSOE::Transform
       vals = [data['OCC_CODE'].sub(/-+/, ''), 
               OCCUPATION, 
               data['OCC_TITL'], 
-              data['DEF']]
+              csv_quote(data['DEF'])]
       outfile.puts vals.join("\t")
       count +=1
     end
