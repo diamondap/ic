@@ -298,9 +298,20 @@ class IC::Source::BLSOE::Transform
   end
 
   def xform_occupation_codes
-    infile_path = File.join(@manager.raw_data_dir, 'oe.occupation')
-    xform_codes(infile_path, 'occupation_code', 
-                OCCUPATION, 'occupation_name', 'definition')
+    infile_path = File.join(@manager.raw_data_dir, 
+                            'occupation_definitions_m2010.csv')
+    count = 0
+    outfile = File.open(codes_file, 'a')
+    CSV.foreach(infile_path, col_sep: ",", headers: true) do |data|
+      vals = [data['OCC_CODE'].sub(/-+/, ''), 
+              OCCUPATION, 
+              data['OCC_TITL'], 
+              data['DEF']]
+      outfile.puts vals.join("\t")
+      count +=1
+    end
+    outfile.close
+    count
   end
 
   def xform_footnote_codes
