@@ -1,7 +1,8 @@
-class Source::BLSOE::Extract
+class IC::Source::BLSOE::Extract
 
-  def initialize(ic)
+  def initialize(ic, manager)
     @ic = ic
+    @manager = manager
   end
 
   def config
@@ -15,21 +16,21 @@ class Source::BLSOE::Extract
 
   def files
     [
-     'oe.area',
-     'oe.areatype',
-     'oe.contacts',
-     'oe.data.0.Current',
-     'oe.data.1.AllData',
-     'oe.datatype',
-     'oe.footnote',
-     'oe.industry',
-     'oe.occugroup',
-     'oe.occupation',
-     'oe.release',
-     'oe.seasonal',
-     'oe.sector',
-     'oe.series',
-     'oe.statemsa',
+     # 'oe.area',
+     # 'oe.areatype',
+     # 'oe.contacts',
+     # 'oe.data.0.Current',
+     # 'oe.data.1.AllData',
+     # 'oe.datatype',
+     # 'oe.footnote',
+     # 'oe.industry',
+     # 'oe.occugroup',
+     # 'oe.occupation',
+     # 'oe.release',
+     # 'oe.seasonal',
+     # 'oe.sector',
+     # 'oe.series',
+     # 'oe.statemsa',
      'oe.txt'
     ]
   end
@@ -40,10 +41,11 @@ class Source::BLSOE::Extract
     @ic.log ftp.welcome
     ftp.passive = true
     
-    @ic.log "Starting fetch. All files will be saved to #{raw_data_dir}"
+    @ic.log "Starting fetch. "
+    @ic.log "All files will be saved to #{@manager.raw_data_dir}"
     ftp.chdir(config[:remote_dir])
     files.each do |remote_file|
-      local_file = File.join(raw_data_dir, remote_file)
+      local_file = File.join(@manager.raw_data_dir, remote_file)
         @ic.log "Fetching text file #{remote_file}"
         ftp.gettextfile(remote_file, local_file)
     end
