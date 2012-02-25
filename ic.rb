@@ -7,6 +7,7 @@ require 'bundler/setup'
 require 'net/ftp'
 require 'net/http'
 require 'csv'
+require 'roo'
 
 module IC
 

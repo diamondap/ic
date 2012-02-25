@@ -75,6 +75,17 @@ class IC::Source::BLSOE::Extract
   def extract
     extract_ftp
     extract_http
+    excel_to_csv
+  end
+
+  def excel_to_csv    
+    Dir[@manager.raw_data_dir + '/*.xls'].each do |file| 
+      csv_file = file.sub(/xls$/, 'csv')
+      @ic.log "Converting #{File.basename(file)} to #{File.basename(csv_file)}"
+      excel_file = Excel.new(file)
+      excel_file.to_csv(csv_file)
+    end
+
   end
 
 end
