@@ -86,7 +86,7 @@ class IC::Source
     commands.each do |command|
       sql = command.strip
       @ic.log sql
-      @ic.dbh.do(sql)
+      @ic.db.exec(sql)
     end
   end
 
