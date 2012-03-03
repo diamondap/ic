@@ -14,6 +14,7 @@ module IC
 
   require_relative 'source'
   require_relative 'autofill'
+  require_relative 'loader'
 
   class Base
 

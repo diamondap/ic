@@ -1,118 +1,26 @@
-class IC::Source::BLSOE::Load
+class IC::Source::BLSOE::Load < IC::Loader
 
   def initialize(ic, manager)
     @ic = ic
     @manager = manager
+    super(ic)
   end
 
   def files
     Dir[@manager.transform_dir + '/*']
   end
 
-  # def load
-  #   files.each do |file|
-  #     table = File.basename(file)
-  #     if table == 'bls_oe_current'
-  #       batch_size = 100000
-  #     else 
-  #       batch_size = 1000
-  #     end
-  #     @ic.log "Loading file #{table} into table #{table}"
-  #     @ic.log "Batch size is #{batch_size}"
-  #     load_into_table(file, table, batch_size)
-  #   end
-  # end
-
   def load
     files.each do |file|
       table = File.basename(file)
-      @ic.log "Loading file #{table} into table #{table}"
-      stmt = "COPY #{table} FROM STDIN WITH CSV HEADER DELIMITER '\t'"
-      begin
-        count = 0
-        @ic.log stmt
-        @ic.db.exec(stmt)
-        File.open(file, 'r').each_line do |line|
-          @ic.db.put_copy_data(line)
-          count += 1
-          if count % 100000 == 0
-            @ic.log "Imported #{count} records"
-          end
-        end
-      rescue Exception => ex
-        @ic.log "Error in bulk copy"
-        @ic.log ex.message
-      ensure
-        @ic.db.put_copy_end
+      if table == 'bls_oe_current'
+        batch_size = 100000
+      else 
+        batch_size = 1000
       end
+      bulk_load(file, batch_size: batch_size)
     end
   end
 
-  # ------------------------------------------------------------------
-  # ERROR:  prepared statement "BLSOE Insert" already exists
-  #
-  # See PREPARE and DEALLOCATE
-  #
-  # http://www.postgresql.org/docs/9.1/static/sql-prepare.html
-  # http://www.postgresql.org/docs/9.1/static/sql-deallocate.html
-  #
-  # Use copy for bulk loading:
-  # 
-  # http://www.postgresql.org/docs/9.1/static/sql-copy.html
-  # ------------------------------------------------------------------
-
-  def load_into_table(file, table, batch_size = 1000)
-    begin 
-      count = 0
-      current_record = nil
-      insert_statement = create_insert_statement(file, table)
-      @ic.log insert_statement
-      statement_name = "#{table} insert"
-      stmt = @ic.db.prepare(statement_name, insert_statement)
-      @ic.db.exec("BEGIN")
-      CSV.foreach(file, col_sep: "\t", headers: true) do |data|
-        current_record = data
-        @ic.db.exec_prepared(statement_name, data.fields)
-        count += 1
-        if count % batch_size == 0
-          @ic.log "Inserted #{count} records"
-        end
-      end
-      @ic.db.exec("COMMIT")
-    rescue Exception => ex
-      @ic.log "Source file #{file} line #{count}"
-      @ic.log current_record.inspect
-      @ic.log ex.message
-      @ic.log ex.backtrace
-    ensure
-      begin 
-        @ic.db.exec("deallocate #{statement_name}")
-      rescue Exception => ex
-        @ic.log "Warning: could not deallocate prepared statement"
-        @ic.log ex.message
-      end
-    end
-  end
-
-
-  def get_placeholders(count)
-    i = 1
-    placeholders = []
-    while i <= count
-      placeholders.push("$#{i}")
-      i += 1
-    end
-    placeholders.join(', ')
-  end
-
-  def create_insert_statement(file, table)
-    headers = nil
-    File.open(file, 'r') { |f|
-      headers = f.readline.chomp.split(/\t/)
-    }
-    placeholders = get_placeholders(headers.count)
-    "insert into #{table} (#{headers.join(', ')}) " + 
-      "values (#{placeholders})"
-  end
 
 end
