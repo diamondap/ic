@@ -6,6 +6,7 @@
 require 'bundler/setup'
 require 'net/ftp'
 require 'net/http'
+require 'pg'
 require 'csv'
 require 'roo'
 
@@ -17,22 +18,9 @@ module IC
   class Base
 
     def initialize
-      @dbh = nil
+      @pg = nil
       @sources = {}
-      require_dbi
       load_all_sources
-    end
-
-    # Silence annoying "already initialized constant Deprecate"
-    # warning that comes out of the DBI module.
-    def require_dbi
-      warn_level = $VERBOSE
-      $VERBOSE = nil
-      begin
-        require 'dbi'
-      ensure
-        $VERBOSE = warn_level
-      end    
     end
 
     def load_all_sources
@@ -72,17 +60,19 @@ module IC
       @sources[name] = source_adapter
     end
 
-    def dbh
-      if @dbh.nil?
-        log "Connecting to DBI:Pg:#{db_catalog} as user #{db_user}"
-        @dbh = DBI.connect("DBI:Pg:#{db_catalog}", db_user, db_password)
+    def db
+      if @pg.nil?
+        log "Connecting to database #{db_catalog} as user #{db_user}"
+        @pg = PG::Connection.new(dbname: db_catalog, 
+                                 user: db_user, 
+                                 password: db_password)
       end
-      @dbh
+      @pg
     end
 
     def disconnect!
-      @dbh.disconnect if @dbh
-      @dbh = nil
+      @pg.close if @pg and !@pg.finished?
+      @pg = nil
     end
 
     def log(message)
