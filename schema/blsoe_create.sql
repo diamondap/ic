@@ -51,6 +51,20 @@ create table if not exists bls_oe_current
 		datatype_code char(2) not null,
 		year int not null,
 		period char(3) not null,
-		value numeric(12,2) not null,
-		footnote_codes char(1) null
+		footnote_codes char(1) null,
+		number_employed numeric(12,2) not null,
+		employment_percent numeric(12,2) not null,
+		hourly_mean_wage numeric(12,2) not null,
+		annual_mean_wage numeric(12,2) not null,
+		wage_percent numeric(12,2) not null,
+		hourly_wage_10th_percentile numeric(12,2) not null,
+		hourly_wage_25th_percentile numeric(12,2) not null,
+		hourly_wage_median numeric(12,2) not null,
+		hourly_wage_75th_percentile numeric(12,2) not null,
+		hourly_wage_90th_percentile numeric(12,2) not null,
+		annual_wage_10th_percentile numeric(12,2) not null,
+		annual_wage_25th_percentile numeric(12,2) not null,
+		annual_wage_median numeric(12,2) not null,
+		annual_wage_75th_percentile numeric(12,2) not null,
+		annual_wage_90th_percentile numeric(12,2) not null
 );

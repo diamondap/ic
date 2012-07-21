@@ -107,7 +107,7 @@ class IC::Source
 
   def rebuild_schema
     drop_schema
-    rebuild_schema
+    create_schema
   end
 
   def show_index

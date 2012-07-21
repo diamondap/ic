@@ -88,15 +88,34 @@ class IC::Source::BLSOE::Transform
   # --------------------------------------------------------------------
 
   # Columns for table bls_oe_current
+  # We're joining 15 rows of source data into a single row 
+  # for our table.
   CURRENT_DATA_COLS = ['seasonal', 'areatype_code', 'area_code',
                        'industry_code', 'occupation_code', 
-                       'datatype_code', 'year', 'period', 'value', 
-                       'footnote_codes']
+                       'datatype_code', 'year', 'period', 
+                       'footnote_codes', 
+                       'number_employed',             # 01
+                       'employment_percent',          # 02
+                       'hourly_mean_wage',            # 03
+                       'annual_mean_wage',            # 04
+                       'wage_percent',                # 05
+                       'hourly_wage_10th_percentile', # 06
+                       'hourly_wage_25th_percentile', # 07
+                       'hourly_wage_median',          # 08
+                       'hourly_wage_75th_percentile', # 09
+                       'hourly_wage_90th_percentile', # 10
+                       'annual_wage_10th_percentile', # 11
+                       'annual_wage_25th_percentile', # 12
+                       'annual_wage_median',          # 13
+                       'annual_wage_75th_percentile', # 14
+                       'annual_wage_90th_percentile', # 15
+                      ]
 
   # Transforms the "current" dataset, which includes the wage data
   # for the current year.
   def xform_current_data
     line_num = 0
+    current_record = []
     infile_path = File.join(@manager.raw_data_dir, 'oe.data.0.Current')
     outfile_path = File.join(@manager.transform_dir, 'bls_oe_current')
     outfile = File.open(outfile_path, 'w')
@@ -107,7 +126,7 @@ class IC::Source::BLSOE::Transform
         line_num = 1
         next
       end
-      series_id, year, period, value, footnote_codes = line.split(/\t/)
+      series_id, year, period, value, footnote_codes = line.chomp.split(/\t/)
       seasonal = series_id[2]
       areatype_code = series_id[3]
       area_code = series_id[4..10]
@@ -115,12 +134,18 @@ class IC::Source::BLSOE::Transform
       occupation_code = series_id[17..22]
       datatype_code = series_id[23..24]
       clean_value = value.strip
-      clean_value = 0 if clean_value =~ /-/ 
-      outfile.print([seasonal, areatype_code, area_code,
-                     industry_code, occupation_code, 
-                     datatype_code, year, period, 
-                     clean_value, 
-                     footnote_codes].join("\t"))
+      clean_value = 0 if clean_value =~ /-/
+      if (datatype_code == '01')
+        current_record = [seasonal, areatype_code, area_code,
+                          industry_code, occupation_code, 
+                          datatype_code, year, period,
+                          footnote_codes, clean_value]
+      else
+        current_record.push(clean_value)
+      end
+      if (datatype_code == '15')
+        outfile.puts(current_record.join("\t"))
+      end
       line_num += 1
       if line_num % 50000 == 0
         puts "Transformed #{line_num} records"
