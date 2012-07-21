@@ -115,19 +115,19 @@ class IC::Source
     puts file_content(create_index_file)
   end
 
-  def drop_index
+  def drop_indexes
     @ic.log "Dropping index for #{name}"
     execute_sql_file(drop_index_file)
   end
 
-  def create_index
+  def create_indexes
     @ic.log "Creating index for #{name}"
     execute_sql_file(create_index_file)
   end
 
-  def rebuild_index
-    drop_index
-    rebuild_index
+  def rebuild_indexes
+    drop_indexes
+    create_indexes
   end
 
 end
