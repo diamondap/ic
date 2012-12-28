@@ -8,3 +8,5 @@ Currently, it just pulls employment data from the US Bureau of Labor Statistics,
 adapted to work with any data sets. One of the principles of this project is to allow you to
 specify much of your ETL process through simple configuration, and then allow custom transformations
 with Ruby.
+
+This project provides the data behind the clarity web-based query ui. Clarity at https://github.com/diamondap/clarity
