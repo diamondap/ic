@@ -10,3 +10,7 @@ specify much of your ETL process through simple configuration, and then allow cu
 with Ruby.
 
 This project provides the data behind the clarity web-based query ui. Clarity at https://github.com/diamondap/clarity
+
+Copyright (C) 2012-2013 A. Diamond
+
+Distributed under the Eclipse Public License.
